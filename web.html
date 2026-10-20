@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web Playground | Code For ME</title>
+    <meta name="description" content="A free place to write HTML and CSS and see your website change as you type. No sign-in, no downloads." />
+    <meta name="theme-color" content="#7497af" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --ink: #1f2d3a; --text: #24313d; --text-soft: #5b6c80;
+        --accent: #7497af; --accent-dark: #4f7191; --accent-darker: #385669; --accent-light: #e7eef3;
+        --sun: #f6c453; --sun-dark: #d9a520; --mint: #62c3a0; --coral: #ef8a6b; --grape: #9b8bd6;
+        --bg: #f7f9fb; --white: #fff; --line: #dfe6ec; --line-soft: #e9eef3;
+        --code-bg: #1f2d3a; --code-gutter: #2a3a4a;
+        --font-display: "Fredoka", "Nunito", system-ui, sans-serif;
+        --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+        --code-size: 15px; --code-line: 24px;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; }
+      body { background: var(--bg); color: var(--text); font-family: var(--font-body); display: flex; flex-direction: column; }
+
+      .top { display: flex; align-items: center; gap: 16px; padding: 12px 22px; background: var(--white); border-bottom: 1px solid var(--line-soft); }
+      .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: var(--font-display); font-weight: 600; font-size: 1.25rem; }
+      .brand img { width: 36px; height: 36px; }
+      .badge { font-family: var(--font-display); font-weight: 600; font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; background: var(--sun); color: #5a4300; border-radius: 999px; padding: 3px 11px; }
+      .top .spacer { flex: 1; }
+      .btn { display: inline-flex; align-items: center; gap: 7px; border: 2px solid var(--line); background: var(--white); color: var(--ink); font: 700 .95rem var(--font-body); border-radius: 999px; padding: 7px 16px; cursor: pointer; transition: transform .15s, border-color .15s; }
+      .btn:hover { transform: translateY(-1px); border-color: var(--accent); }
+      .btn--dark { background: var(--accent-dark); border-color: var(--accent-dark); color: var(--white); }
+      .btn--dark:hover { border-color: var(--accent-darker); }
+
+      main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 16px 22px 22px; }
+      .editors { display: grid; grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; min-height: 0; }
+      .panel { display: flex; flex-direction: column; min-height: 0; background: var(--code-bg); border-radius: 18px; overflow: hidden; box-shadow: 0 10px 26px rgba(36, 49, 61, .1); }
+      .panel__head { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #26384a; color: #dbe5ee; font: 700 .95rem var(--font-display); letter-spacing: .02em; }
+      .dot { width: 11px; height: 11px; border-radius: 50%; }
+      .panel__hint { margin-left: auto; font: 600 .78rem var(--font-body); color: #9fb2c4; }
+
+      .code { position: relative; flex: 1; min-height: 0; display: flex; }
+      .gutter { width: 44px; flex-shrink: 0; padding: 14px 10px 14px 0; background: var(--code-gutter); color: #6f8499; text-align: right; font: 500 var(--code-size)/var(--code-line) var(--font-mono); white-space: pre; overflow: hidden; user-select: none; }
+      .field { position: relative; flex: 1; min-width: 0; }
+      .field pre, .field textarea { position: absolute; inset: 0; margin: 0; padding: 14px 16px; border: 0; font: 500 var(--code-size)/var(--code-line) var(--font-mono); tab-size: 2; white-space: pre-wrap; word-break: break-word; overflow: auto; }
+      .field pre { color: #e7eef3; pointer-events: none; }
+      .field textarea { background: transparent; color: transparent; caret-color: var(--sun); resize: none; outline: none; }
+      .field textarea::selection { background: rgba(246, 196, 83, .3); color: transparent; }
+      .tok-tag { color: #7fc8f8; } .tok-attr { color: #f6c453; } .tok-str { color: #9ee6b8; } .tok-com { color: #6f8499; font-style: italic; }
+      .tok-sel { color: #f6a07e; } .tok-prop { color: #7fc8f8; } .tok-val { color: #9ee6b8; } .tok-punc { color: #9fb2c4; }
+
+      .preview { display: flex; flex-direction: column; min-height: 0; background: var(--white); border: 2px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: 0 10px 26px rgba(36, 49, 61, .08); }
+      .preview .panel__head { background: var(--accent-light); color: var(--accent-darker); }
+      .preview .panel__hint { color: var(--text-soft); }
+      .preview iframe { flex: 1; width: 100%; border: 0; background: var(--white); }
+
+      @media (max-width: 860px) {
+        main { grid-template-columns: 1fr; grid-template-rows: auto minmax(360px, 1fr); }
+        .editors { grid-template-rows: 300px 240px; }
+        .top { flex-wrap: wrap; padding: 10px 16px; }
+        main { padding: 12px 16px 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="/"><img src="/assets/logo.png" alt="" />Code For ME</a>
+      <span class="badge">Web Playground</span>
+      <span class="spacer"></span>
+      <button class="btn" id="reset" type="button">↺ Start over</button>
+      <button class="btn btn--dark" id="download" type="button">⬇ Download my website</button>
+    </header>
+
+    <main>
+      <div class="editors">
+        <section class="panel" id="html-panel" aria-label="HTML">
+          <div class="panel__head"><span class="dot" style="background: var(--coral)"></span>HTML<span class="panel__hint">what's on the page</span></div>
+          <div class="code"><div class="gutter" aria-hidden="true"></div><div class="field"><pre aria-hidden="true"></pre><textarea id="html" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="HTML code"></textarea></div></div>
+        </section>
+        <section class="panel" id="css-panel" aria-label="CSS">
+          <div class="panel__head"><span class="dot" style="background: var(--sun)"></span>CSS<span class="panel__hint">how it looks</span></div>
+          <div class="code"><div class="gutter" aria-hidden="true"></div><div class="field"><pre aria-hidden="true"></pre><textarea id="css" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="CSS code"></textarea></div></div>
+        </section>
+      </div>
+      <section class="preview" id="preview-panel" aria-label="Your website">
+        <div class="panel__head"><span class="dot" style="background: var(--mint)"></span>Your website<span class="panel__hint">updates as you type</span></div>
+        <iframe id="preview" title="Your website" sandbox="allow-popups allow-popups-to-escape-sandbox"></iframe>
+      </section>
+    </main>
+
+    <script>
+      const STORE = "cfm-web-playground";
+      const html = document.getElementById("html"), css = document.getElementById("css"), frame = document.getElementById("preview");
+      const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+      // Light syntax colors: the textarea is transparent and a colored copy sits underneath it.
+      function paintHTML(src) {
+        return esc(src).replace(/(&lt;!--[\s\S]*?--&gt;)|(&lt;\/?)([a-zA-Z0-9-]+)([^&]*?)(\/?&gt;)/g, (m, com, open, tag, attrs, close) => {
+          if (com) return `<span class="tok-com">${com}</span>`;
+          attrs = attrs.replace(/([a-zA-Z-]+)(=)("[^"]*"|'[^']*')?/g, (a, n, eq, v) => `<span class="tok-attr">${n}</span>${eq}${v ? `<span class="tok-str">${v}</span>` : ""}`);
+          return `<span class="tok-tag">${open}${tag}</span>${attrs}<span class="tok-tag">${close}</span>`;
+        });
+      }
+      function paintCSS(src) {
+        return esc(src).replace(/(\/\*[\s\S]*?\*\/)|([^{}]+)(\{)([^}]*)(\}?)/g, (m, com, sel, ob, body, cb) => {
+          if (com) return `<span class="tok-com">${com}</span>`;
+          body = body.replace(/([a-zA-Z-]+)(\s*:\s*)([^;\n]*)(;?)/g, (d, p, c, v, s) => `<span class="tok-prop">${p}</span><span class="tok-punc">${c}</span><span class="tok-val">${v}</span><span class="tok-punc">${s}</span>`);
+          return `<span class="tok-sel">${sel}</span><span class="tok-punc">${ob}</span>${body}<span class="tok-punc">${cb}</span>`;
+        });
+      }
+
+      function sync(area, paint) {
+        const field = area.parentElement, pre = field.querySelector("pre"), gutter = field.parentElement.querySelector(".gutter");
+        pre.innerHTML = paint(area.value) + "\n";
+        gutter.textContent = area.value.split("\n").map((_, i) => i + 1).join("\n");
+        pre.scrollTop = area.scrollTop; gutter.scrollTop = area.scrollTop;
+      }
+
+      const page = () => `<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<title>My Website</title>\n<style>\n${css.value}\n</style>\n</head>\n<body>\n${html.value}\n</body>\n</html>\n`;
+      let timer;
+      function update() {
+        sync(html, paintHTML); sync(css, paintCSS);
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          frame.srcdoc = page().replace("<head>", '<head>\n<base target="_blank">');
+          try { localStorage.setItem(STORE, JSON.stringify({ html: html.value, css: css.value })); } catch (e) {}
+        }, 250);
+      }
+
+      for (const area of [html, css]) {
+        area.addEventListener("input", update);
+        area.addEventListener("scroll", () => { const f = area.parentElement; f.querySelector("pre").scrollTop = area.scrollTop; f.parentElement.querySelector(".gutter").scrollTop = area.scrollTop; });
+        area.addEventListener("keydown", (e) => {
+          if (e.key !== "Tab") return;
+          e.preventDefault();
+          const s = area.selectionStart;
+          area.value = area.value.slice(0, s) + "  " + area.value.slice(area.selectionEnd);
+          area.selectionStart = area.selectionEnd = s + 2; update();
+        });
+      }
+
+      document.getElementById("reset").onclick = () => {
+        if (!confirm("Start over with an empty page?")) return;
+        html.value = ""; css.value = ""; update(); html.focus();
+      };
+      document.getElementById("download").onclick = () => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([page()], { type: "text/html" }));
+        a.download = "my-website.html"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      };
+
+      try { const saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved) { html.value = saved.html || ""; css.value = saved.css || ""; } } catch (e) {}
+      update();
+    </script>
+  </body>
+</html>
